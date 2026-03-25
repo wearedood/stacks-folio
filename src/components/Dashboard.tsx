@@ -191,36 +191,23 @@ const Dashboard: React.FC<Props> = ({ portfolio, address, onReset }) => {
         {tab === 'nfts' && (
           portfolio.nfts.length === 0
             ? <div className="bg-white border border-black/8 px-5 py-12 text-center text-black/30 text-sm">No NFTs found</div>
-            : <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            : <div className="space-y-2">
                 {portfolio.nfts.map((nft, i) => (
-                  <div key={i} className="bg-white border border-black/8 overflow-hidden">
-                    <div className="aspect-square bg-black/5 relative">
-                      {nft.cachedImageUrl || nft.imageUrl ? (
-                        <img
-                          src={nft.cachedImageUrl ?? nft.imageUrl}
-                          alt={nft.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            // fallback to imageUrl if cached fails
-                            const img = e.currentTarget;
-                            if (nft.imageUrl && img.src !== nft.imageUrl) {
-                              img.src = nft.imageUrl;
-                            } else {
-                              img.style.display = 'none';
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-2xl font-black text-black/10">#{nft.tokenId}</span>
-                        </div>
-                      )}
+                  <a key={i}
+                    href={`https://explorer.hiro.so/txid/${nft.contractId}?chain=mainnet`}
+                    target="_blank" rel="noreferrer"
+                    className="flex items-center justify-between bg-white border border-black/8 px-5 py-4 hover:bg-black/2 transition-colors group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-black flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-[10px] font-black">#{nft.tokenId}</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold">{nft.name}</p>
+                        <p className="text-[10px] font-mono text-black/30 truncate max-w-[180px]">{nft.contractId.split('.')[1]}</p>
+                      </div>
                     </div>
-                    <div className="p-3">
-                      <p className="text-xs font-bold truncate">{nft.name}</p>
-                      <p className="text-xs text-black/30 font-mono">#{nft.tokenId}</p>
-                    </div>
-                  </div>
+                    <span className="text-xs text-black/20 group-hover:text-black/40 transition-colors">↗</span>
+                  </a>
                 ))}
               </div>
         )}
