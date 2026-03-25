@@ -23,7 +23,7 @@ const Dashboard: React.FC<Props> = ({ portfolio, address, onReset }) => {
   const earnedBadges = badges.filter(b => b.earned);
 
   const shareText = encodeURIComponent(
-    `Just checked my @Stacks portfolio with Stacks Folio ⚡\n\n${fmt(portfolio.stxBalance)} STX · $${fmt(portfolio.stxBalanceUsd)} USD\nStacks Score: ${score.total}/100 · ${score.tier}${portfolio.stacking.stacked ? `\n🔒 Stacking ${fmt(portfolio.stacking.amountStacked)} STX` : ''}\n\nCheck yours 👇\nhttps://stacks-folio.vercel.app\n\n#Stacks #Bitcoin #Web3`
+    `My @Stacks wallet score: ${score.total}/100 · ${score.tier} ⚡\n\nJust explored my on-chain portfolio with StacksFolio — built on Bitcoin L2.\n\nCheck yours 👇\nhttps://stacks-folio.vercel.app\n\n@talentprotocol #Stacks #Bitcoin #BuildOnStacks\n\nby @ddtrvlr`
   );
   const xUrl = `https://twitter.com/intent/tweet?text=${shareText}`;
   const castUrl = `https://warpcast.com/~/compose?text=${shareText}`;
@@ -140,9 +140,18 @@ const Dashboard: React.FC<Props> = ({ portfolio, address, onReset }) => {
             <AISummary portfolio={portfolio} />
             <WalletFingerprint portfolio={portfolio} />
             <div className="flex gap-2">
-              <a href={xUrl} target="_blank" rel="noreferrer" className="flex-1 bg-black text-white text-center py-3 text-xs font-bold uppercase tracking-widest hover:bg-black/80 transition-colors">Post on X</a>
-              <a href={castUrl} target="_blank" rel="noreferrer" className="flex-1 bg-[#8A63D2] text-white text-center py-3 text-xs font-bold uppercase tracking-widest hover:bg-[#7952c4] transition-colors">Cast</a>
+              <a href={xUrl} target="_blank" rel="noreferrer"
+                className="flex-1 bg-black text-white text-center py-3 text-xs font-bold uppercase tracking-widest hover:bg-black/80 transition-colors">
+                Post on X
+              </a>
+              <a href={castUrl} target="_blank" rel="noreferrer"
+                className="flex-1 bg-[#8A63D2] text-white text-center py-3 text-xs font-bold uppercase tracking-widest hover:bg-[#7952c4] transition-colors">
+                Cast
+              </a>
             </div>
+            <p className="text-center text-[10px] font-mono text-black/20">
+              Built by <a href="https://x.com/ddtrvlr" target="_blank" rel="noreferrer" className="hover:text-black/40 transition-colors">@ddtrvlr</a>
+            </p>
           </div>
         )}
 
@@ -214,6 +223,11 @@ const Dashboard: React.FC<Props> = ({ portfolio, address, onReset }) => {
           </a>
         </div>
       </main>
+
+      <footer className="border-t border-black/8 px-6 py-5 flex items-center justify-between text-xs text-black/25 font-mono">
+        <span>StacksFolio · Bitcoin L2</span>
+        <a href="https://x.com/ddtrvlr" target="_blank" rel="noreferrer" className="hover:text-black/50 transition-colors">@ddtrvlr</a>
+      </footer>
     </div>
   );
 };
