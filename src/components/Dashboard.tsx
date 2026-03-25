@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PortfolioData } from '../services/stacksService';
 import { computeScore, computeBadges } from '../services/scoreService';
 import ScoreCard from './ScoreCard';
-import WalletFingerprint from './WalletFingerprint';
+import WalletGalaxy from './WalletGalaxy';
 import AISummary from './AISummary';
 import PriceChart from './PriceChart';
 import TokenBalances from './TokenBalances';
@@ -138,7 +138,7 @@ const Dashboard: React.FC<Props> = ({ portfolio, address, onReset }) => {
               ))}
             </div>
             <AISummary portfolio={portfolio} />
-            <WalletFingerprint portfolio={portfolio} />
+            <WalletGalaxy portfolio={portfolio} score={score} address={address} />
             <div className="flex gap-2">
               <a href={xUrl} target="_blank" rel="noreferrer"
                 className="flex-1 bg-black text-white text-center py-3 text-xs font-bold uppercase tracking-widest hover:bg-black/80 transition-colors">

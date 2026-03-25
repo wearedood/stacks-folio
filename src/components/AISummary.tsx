@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { PortfolioData } from '../services/stacksService';
 
-interface Props {
-  portfolio: PortfolioData;
-}
+interface Props { portfolio: PortfolioData; }
 
 const AISummary: React.FC<Props> = ({ portfolio }) => {
   const [summary, setSummary] = useState<string | null>(null);
@@ -13,6 +11,7 @@ const AISummary: React.FC<Props> = ({ portfolio }) => {
   const generate = async () => {
     setLoading(true);
     setError(null);
+    setSummary(null);
     try {
       const prompt = `You are a witty crypto analyst. In exactly 3 short punchy lines, roast and summarize this Stacks wallet. Be clever, funny, and specific to the data. No emojis. No markdown.
 
@@ -33,12 +32,12 @@ Write exactly 3 lines. Each line should be a standalone sentence. Be brutally ho
         body: JSON.stringify({ prompt }),
       });
 
-      if (!response.ok) throw new Error(`Worker error: ${response.status}`);
-
-      const data = await response.json();
+      if (!response.ok) throw new Error(`Worker responded ${response.status}`);
+      const data = await response.json() as { text?: string; error?: string };
+      if (data.error) throw new Error(data.error);
       setSummary((data.text ?? '').trim());
     } catch (e: any) {
-      setError('Failed to generate roast. Try again.');
+      setError(e.message ?? 'Failed to generate roast. Try again.');
     } finally {
       setLoading(false);
     }
@@ -51,13 +50,11 @@ Write exactly 3 lines. Each line should be a standalone sentence. Be brutally ho
         <span className="text-[10px] font-mono text-black/20 uppercase">Powered by Gemini</span>
       </div>
 
-      {!summary && !loading && (
+      {!summary && !loading && !error && (
         <div className="space-y-3">
           <p className="text-sm text-black/40">Get a 3-line AI roast of your wallet based on your on-chain activity.</p>
-          <button
-            onClick={generate}
-            className="w-full bg-black text-white py-3 text-xs font-bold uppercase tracking-widest hover:bg-black/80 transition-colors"
-          >
+          <button onClick={generate}
+            className="w-full bg-black text-white py-3 text-xs font-bold uppercase tracking-widest hover:bg-black/80 transition-colors">
             Roast My Wallet
           </button>
         </div>
@@ -73,10 +70,8 @@ Write exactly 3 lines. Each line should be a standalone sentence. Be brutally ho
       {error && (
         <div className="space-y-3">
           <p className="text-sm text-red-500">{error}</p>
-          <button
-            onClick={generate}
-            className="w-full bg-black text-white py-3 text-xs font-bold uppercase tracking-widest hover:bg-black/80 transition-colors"
-          >
+          <button onClick={generate}
+            className="w-full bg-black text-white py-3 text-xs font-bold uppercase tracking-widest hover:bg-black/80 transition-colors">
             Try Again
           </button>
         </div>
@@ -89,10 +84,8 @@ Write exactly 3 lines. Each line should be a standalone sentence. Be brutally ho
               <p key={i} className="text-sm leading-relaxed">{line}</p>
             ))}
           </div>
-          <button
-            onClick={generate}
-            className="text-xs font-mono text-black/30 uppercase tracking-widest hover:text-black transition-colors underline"
-          >
+          <button onClick={generate}
+            className="text-xs font-mono text-black/30 uppercase tracking-widest hover:text-black transition-colors underline">
             Regenerate
           </button>
         </div>
