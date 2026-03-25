@@ -27,21 +27,18 @@ Wallet data:
 
 Write exactly 3 lines. Each line should be a standalone sentence. Be brutally honest but entertaining.`;
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('https://stacks-folio-proxy.wearedood.workers.dev', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: prompt }],
-        }),
+        body: JSON.stringify({ prompt }),
       });
 
+      if (!response.ok) throw new Error(`Worker error: ${response.status}`);
+
       const data = await response.json();
-      const text = data.content?.find((b: any) => b.type === 'text')?.text ?? '';
-      setSummary(text.trim());
+      setSummary((data.text ?? '').trim());
     } catch (e: any) {
-      setError('Failed to generate summary');
+      setError('Failed to generate roast. Try again.');
     } finally {
       setLoading(false);
     }
@@ -51,7 +48,7 @@ Write exactly 3 lines. Each line should be a standalone sentence. Be brutally ho
     <div className="bg-white border border-black/8 p-6 space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-xs font-mono uppercase tracking-widest text-black/30">AI Summary</p>
-        <span className="text-[10px] font-mono text-black/20 uppercase">Powered by Claude</span>
+        <span className="text-[10px] font-mono text-black/20 uppercase">Powered by Gemini</span>
       </div>
 
       {!summary && !loading && (
@@ -69,12 +66,20 @@ Write exactly 3 lines. Each line should be a standalone sentence. Be brutally ho
       {loading && (
         <div className="flex items-center gap-3 py-4">
           <span className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin flex-shrink-0"></span>
-          <span className="text-sm text-black/40">Claude is reading your chain history...</span>
+          <span className="text-sm text-black/40">AI is reading your chain history...</span>
         </div>
       )}
 
       {error && (
-        <div className="text-sm text-red-500">{error}</div>
+        <div className="space-y-3">
+          <p className="text-sm text-red-500">{error}</p>
+          <button
+            onClick={generate}
+            className="w-full bg-black text-white py-3 text-xs font-bold uppercase tracking-widest hover:bg-black/80 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       )}
 
       {summary && (
