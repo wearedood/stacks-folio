@@ -193,11 +193,30 @@ const Dashboard: React.FC<Props> = ({ portfolio, address, onReset }) => {
             ? <div className="bg-white border border-black/8 px-5 py-12 text-center text-black/30 text-sm">No NFTs found</div>
             : <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {portfolio.nfts.map((nft, i) => (
-                  <div key={i} className="bg-white border border-black/8 p-4 space-y-2">
-                    <div className="aspect-square bg-black/5 flex items-center justify-center">
-                      <span className="text-2xl font-black text-black/10">#{nft.tokenId}</span>
+                  <div key={i} className="bg-white border border-black/8 overflow-hidden">
+                    <div className="aspect-square bg-black/5 relative">
+                      {nft.cachedImageUrl || nft.imageUrl ? (
+                        <img
+                          src={nft.cachedImageUrl ?? nft.imageUrl}
+                          alt={nft.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // fallback to imageUrl if cached fails
+                            const img = e.currentTarget;
+                            if (nft.imageUrl && img.src !== nft.imageUrl) {
+                              img.src = nft.imageUrl;
+                            } else {
+                              img.style.display = 'none';
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-2xl font-black text-black/10">#{nft.tokenId}</span>
+                        </div>
+                      )}
                     </div>
-                    <div>
+                    <div className="p-3">
                       <p className="text-xs font-bold truncate">{nft.name}</p>
                       <p className="text-xs text-black/30 font-mono">#{nft.tokenId}</p>
                     </div>
