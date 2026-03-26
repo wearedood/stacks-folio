@@ -1,5 +1,9 @@
 {
-  "name": "stacks-folio-proxy",
-  "main": "src/index.ts",
-  "compatibility_date": "2024-01-01"
+	"name": "stacks-folio-proxy",
+	"main": "src/index.ts",
+	"compatibility_date": "2024-01-01",
+        "kv_namespaces": [{ "binding": "LEADERBOARD", "id": "e079da40ec834732842450cac03e57c7" }]
+			"remote": true
+		}
+	]
 }

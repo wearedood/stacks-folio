@@ -32,8 +32,7 @@ export const drawPlanet = (canvas: HTMLCanvasElement, portfolio: PortfolioData, 
   const ptype = PLANET_TYPES.filter(t => score.total >= t.minScore).pop()!;
   const cols = ptype.colors;
   const cx = 38, cy = 42, pr = 22;
-  g.fillStyle = '#050510';
-  g.fillRect(0, 0, W, H);
+  g.fillStyle = '#050510'; g.fillRect(0, 0, W, H);
   const srand = mkRand(seed + 777);
   for (let i = 0; i < 70; i++) {
     const sx = Math.floor(srand() * W), sy = Math.floor(srand() * H);
@@ -63,10 +62,8 @@ export const drawPlanet = (canvas: HTMLCanvasElement, portfolio: PortfolioData, 
       if (ptype.name === 'Lava') { const lr = mkRand((px*11+py*17+seed+300)|0); if (lr() > 0.88) col = '#ffcc00'; }
       if (ptype.name === 'Ice Moon') { const ir = mkRand((px*11+py*17+seed+500)|0); if (ir() > 0.93) col = cols[5]; }
       const shade = 1 - (dx * 0.012 + dy * 0.014) * (dist / pr);
-      g.fillStyle = col;
-      g.globalAlpha = Math.max(0.5, Math.min(1, shade));
-      g.fillRect(px, py, 1, 1);
-      g.globalAlpha = 1;
+      g.fillStyle = col; g.globalAlpha = Math.max(0.5, Math.min(1, shade));
+      g.fillRect(px, py, 1, 1); g.globalAlpha = 1;
     }
   }
   const craterCount = Math.min(Math.floor(portfolio.transactionCount / 3), 7);
@@ -76,8 +73,7 @@ export const drawPlanet = (canvas: HTMLCanvasElement, portfolio: PortfolioData, 
     const cpx = Math.round(cx + Math.cos(angle) * r * 0.65), cpy = Math.round(cy + Math.sin(angle) * r * 0.6);
     const cr = 1 + Math.floor(crand() * 2);
     g.fillStyle = '#000'; g.globalAlpha = 0.45; g.fillRect(cpx-cr, cpy-cr, cr*2+1, cr*2+1);
-    g.fillStyle = '#fff'; g.globalAlpha = 0.15; g.fillRect(cpx-cr, cpy-cr, cr, cr);
-    g.globalAlpha = 1;
+    g.fillStyle = '#fff'; g.globalAlpha = 0.15; g.fillRect(cpx-cr, cpy-cr, cr, cr); g.globalAlpha = 1;
   }
   for (let py = cy-pr-1; py <= cy+pr+1; py++) {
     for (let px = cx-pr-1; px <= cx+pr+1; px++) {
@@ -87,9 +83,9 @@ export const drawPlanet = (canvas: HTMLCanvasElement, portfolio: PortfolioData, 
     }
   }
   if (portfolio.nfts.length > 5) {
-    const mr = 5, mx = cx+pr+13, my = cy-pr+6;
-    for (let py = my-mr; py <= my+mr; py++) for (let px = mx-mr; px <= mx+mr; px++) {
-      const dx=px-mx, dy=py-my;
+    const mr = 5, mx2 = cx+pr+13, my2 = cy-pr+6;
+    for (let py = my2-mr; py <= my2+mr; py++) for (let px = mx2-mr; px <= mx2+mr; px++) {
+      const dx=px-mx2, dy=py-my2;
       if (Math.sqrt(dx*dx+dy*dy) > mr) continue;
       const r = mkRand((px*17+py*23+seed)|0);
       g.fillStyle = r() > 0.5 ? '#c8c8c8' : '#aaaaaa';
@@ -97,9 +93,9 @@ export const drawPlanet = (canvas: HTMLCanvasElement, portfolio: PortfolioData, 
     }
   }
   if (portfolio.nfts.length > 10) {
-    const mr = 3, mx = cx-pr-9, my = cy+pr-10;
-    for (let py = my-mr; py <= my+mr; py++) for (let px = mx-mr; px <= mx+mr; px++) {
-      const dx=px-mx, dy=py-my;
+    const mr = 3, mx2 = cx-pr-9, my2 = cy+pr-10;
+    for (let py = my2-mr; py <= my2+mr; py++) for (let px = mx2-mr; px <= mx2+mr; px++) {
+      const dx=px-mx2, dy=py-my2;
       if (Math.sqrt(dx*dx+dy*dy) > mr) continue;
       const r = mkRand((px*13+py*19+seed+1)|0);
       g.fillStyle = r() > 0.5 ? '#d4a574' : '#b8845a';
@@ -116,11 +112,13 @@ export const drawPlanet = (canvas: HTMLCanvasElement, portfolio: PortfolioData, 
   return ptype.name;
 };
 
+const CONTRACT = 'SP1GVG84HRYCBYEW59M0S4XGQF8TTVXRF8XNXGBMH.stacks-folio-galaxy';
+
 const WalletPixelPlanet: React.FC<Props> = ({ portfolio, score, address }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [planetName, setPlanetName] = useState('');
   const [minting, setMinting] = useState(false);
-  const [mintStatus, setMintStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [mintStatus, setMintStatus] = useState<'idle' | 'success' | 'error' | 'already'>('idle');
   const [mintMsg, setMintMsg] = useState('');
 
   useEffect(() => {
@@ -141,18 +139,41 @@ const WalletPixelPlanet: React.FC<Props> = ({ portfolio, score, address }) => {
     try {
       const { request } = await import('@stacks/connect');
       await request('stx_callContract', {
-        contract: 'SP1GVG84HRYCBYEW59M0S4XGQF8TTVXRF8XNXGBMH.stacks-folio-galaxy',
-        functionName: 'mint', functionArgs: [], network: 'mainnet',
+        contract: CONTRACT,
+        functionName: 'mint',
+        functionArgs: [],
+        network: 'mainnet',
       });
-      setMintStatus('success'); setMintMsg('Planet minted! Check your wallet 🪐');
+      setMintStatus('success');
     } catch (e: any) {
-      setMintStatus('error');
-      setMintMsg(e.message?.includes('cancel') ? 'Cancelled.' : 'Mint failed. Try again.');
+      if (e.message?.includes('cancel') || e.message?.includes('abort')) {
+        setMintStatus('idle');
+      } else if (e.message?.includes('409') || e.message?.includes('already') || e.message?.includes('u409')) {
+        setMintStatus('already');
+      } else {
+        setMintStatus('error');
+        setMintMsg('Mint failed. Try again.');
+      }
     } finally { setMinting(false); }
   };
 
   const hasRings = portfolio.stacking.stacked || score.total > 60;
   const nftCount = portfolio.nfts.length;
+  const gammaUrl = `https://gamma.io/collections/${CONTRACT}`;
+  const leatherUrl = `https://leather.io/activity`;
+
+  const PostMintButtons = () => (
+    <div className="flex gap-2">
+      <a href={leatherUrl} target="_blank" rel="noreferrer"
+        className="flex-1 bg-white text-black text-center py-2.5 text-xs font-bold uppercase tracking-widest hover:bg-white/80 transition-colors">
+        View in Wallet
+      </a>
+      <a href={gammaUrl} target="_blank" rel="noreferrer"
+        className="flex-1 bg-[#FF9900] text-black text-center py-2.5 text-xs font-bold uppercase tracking-widest hover:bg-[#ffb03a] transition-colors">
+        Sell on Gamma
+      </a>
+    </div>
+  );
 
   return (
     <div className="bg-[#050510] border border-white/10 p-6 space-y-4">
@@ -160,9 +181,11 @@ const WalletPixelPlanet: React.FC<Props> = ({ portfolio, score, address }) => {
         <p className="text-xs font-mono uppercase tracking-widest text-white/30">Wallet Planet</p>
         <p className="text-[10px] text-white/20 font-mono">Unique to your wallet</p>
       </div>
+
       <div className="flex justify-center">
         <canvas ref={canvasRef} width={320} height={320} style={{ imageRendering: 'pixelated' }} className="rounded-sm" />
       </div>
+
       {planetName && (
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <span className="text-xs font-mono text-white/40 uppercase tracking-widest">{planetName}</span>
@@ -172,15 +195,46 @@ const WalletPixelPlanet: React.FC<Props> = ({ portfolio, score, address }) => {
           {nftCount > 5 && <><span className="text-white/20 text-xs">·</span><span className="text-xs font-mono text-white/40">{nftCount > 10 ? '2 moons' : '1 moon'}</span></>}
         </div>
       )}
-      <p className="text-[10px] text-center text-white/15 font-mono">Type from score · craters from txns · moons from NFTs · rings from stacking</p>
-      <div className="flex gap-2">
-        <button onClick={handleDownload} className="flex-1 border border-white/20 text-white/60 py-2.5 text-xs font-bold uppercase tracking-widest hover:border-white/40 hover:text-white transition-colors">Download</button>
-        <button onClick={handleMint} disabled={minting} className="flex-1 bg-[#FF9900] text-black py-2.5 text-xs font-bold uppercase tracking-widest hover:bg-[#ffb03a] transition-colors disabled:opacity-50">
-          {minting ? 'Minting...' : 'Mint as NFT'}
-        </button>
-      </div>
-      {mintStatus !== 'idle' && (
-        <p className={`text-xs text-center font-mono ${mintStatus === 'success' ? 'text-green-400' : 'text-red-400'}`}>{mintMsg}</p>
+
+      <p className="text-[10px] text-center text-white/15 font-mono">
+        Type from score · craters from txns · moons from NFTs · rings from stacking
+      </p>
+
+      {mintStatus === 'idle' && (
+        <div className="flex gap-2">
+          <button onClick={handleDownload}
+            className="flex-1 border border-white/20 text-white/60 py-2.5 text-xs font-bold uppercase tracking-widest hover:border-white/40 hover:text-white transition-colors">
+            Download
+          </button>
+          <button onClick={handleMint} disabled={minting}
+            className="flex-1 bg-[#FF9900] text-black py-2.5 text-xs font-bold uppercase tracking-widest hover:bg-[#ffb03a] transition-colors disabled:opacity-50">
+            {minting ? 'Minting...' : 'Mint as NFT'}
+          </button>
+        </div>
+      )}
+
+      {mintStatus === 'success' && (
+        <div className="space-y-2">
+          <p className="text-xs text-center font-mono text-green-400 pb-1">Planet minted! 🪐</p>
+          <PostMintButtons />
+        </div>
+      )}
+
+      {mintStatus === 'already' && (
+        <div className="space-y-2">
+          <p className="text-xs text-center font-mono text-white/30 pb-1">Already minted — 1 per wallet</p>
+          <PostMintButtons />
+        </div>
+      )}
+
+      {mintStatus === 'error' && (
+        <div className="space-y-2">
+          <p className="text-xs text-center font-mono text-red-400">{mintMsg}</p>
+          <button onClick={() => setMintStatus('idle')}
+            className="w-full border border-white/20 text-white/60 py-2.5 text-xs font-bold uppercase tracking-widest hover:border-white/40 hover:text-white transition-colors">
+            Try Again
+          </button>
+        </div>
       )}
     </div>
   );
