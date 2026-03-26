@@ -194,7 +194,7 @@ const Dashboard: React.FC<Props> = ({ portfolio, address, onReset }) => {
             : <div className="space-y-2">
                 {portfolio.nfts.map((nft, i) => (
                   <a key={i}
-                    href={`https://explorer.hiro.so/txid/${nft.contractId}?chain=mainnet`}
+                    href={`https://gamma.io/collections/${nft.contractId}`}
                     target="_blank" rel="noreferrer"
                     className="flex items-center justify-between bg-white border border-black/8 px-5 py-4 hover:bg-black/2 transition-colors group">
                     <div className="flex items-center gap-4">
