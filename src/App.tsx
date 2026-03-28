@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connectWallet } from './services/web3Service';
 import { fetchPortfolio, PortfolioData } from './services/stacksService';
 import Dashboard from './components/Dashboard';
@@ -11,15 +11,33 @@ const App: React.FC = () => {
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // On mount, check if wallet was previously connected
+  useEffect(() => {
+    const saved = localStorage.getItem('sf_address');
+    if (saved) loadPortfolio(saved);
+  }, []);
+
+  const loadPortfolio = async (addr: string) => {
+    try {
+      setState('loading');
+      setError(null);
+      setAddress(addr);
+      const data = await fetchPortfolio(addr);
+      setPortfolio(data);
+      setState('success');
+      localStorage.setItem('sf_address', addr);
+    } catch (e: any) {
+      setError(e.message || 'Something went wrong');
+      setState('error');
+    }
+  };
+
   const handleConnect = async () => {
     try {
       setState('loading');
       setError(null);
       const addr = await connectWallet();
-      setAddress(addr);
-      const data = await fetchPortfolio(addr);
-      setPortfolio(data);
-      setState('success');
+      await loadPortfolio(addr);
     } catch (e: any) {
       setError(e.message || 'Something went wrong');
       setState('error');
@@ -31,6 +49,7 @@ const App: React.FC = () => {
     setAddress(null);
     setPortfolio(null);
     setError(null);
+    localStorage.removeItem('sf_address');
   };
 
   if (state === 'success' && portfolio && address) {
@@ -39,7 +58,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
-      {/* Header */}
       <header className="px-8 py-6 flex items-center justify-between border-b border-black/8">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 bg-black rounded-sm flex items-center justify-center">
@@ -50,7 +68,6 @@ const App: React.FC = () => {
         <span className="text-xs font-mono text-black/30 uppercase tracking-widest">Bitcoin Layer</span>
       </header>
 
-      {/* Hero */}
       <main className="flex-grow flex flex-col items-center justify-center px-6 text-center">
         <div className="max-w-lg space-y-10">
           <div className="space-y-4">
@@ -108,7 +125,7 @@ const App: React.FC = () => {
 
       <footer className="px-8 py-5 border-t border-black/8 flex items-center justify-between text-xs text-black/25 font-mono">
         <span>Built on Stacks · Bitcoin L2</span>
-        <span>@ddtrvlr</span>
+        <a href="https://x.com/ddtrvlr" target="_blank" rel="noreferrer" className="hover:text-black/50 transition-colors">@ddtrvlr</a>
       </footer>
     </div>
   );
