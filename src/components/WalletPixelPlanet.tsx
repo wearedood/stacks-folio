@@ -112,7 +112,7 @@ export const drawPlanet = (canvas: HTMLCanvasElement, portfolio: PortfolioData, 
   return ptype.name;
 };
 
-const CONTRACT = 'SP1GVG84HRYCBYEW59M0S4XGQF8TTVXRF8XNXGBMH.stacks-folio-galaxy';
+
 
 const WalletPixelPlanet: React.FC<Props> = ({ portfolio, score, address }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -159,7 +159,7 @@ const WalletPixelPlanet: React.FC<Props> = ({ portfolio, score, address }) => {
 
   const hasRings = portfolio.stacking.stacked || score.total > 60;
   const nftCount = portfolio.nfts.length;
-  const gammaUrl = `https://gamma.io/collections/${CONTRACT}`;
+  const gammaUrl = 'https://gamma.io/create';
   const leatherUrl = `https://explorer.hiro.so/address/''+address+'?chain=mainnet'`;
 
   const PostMintButtons = () => (
