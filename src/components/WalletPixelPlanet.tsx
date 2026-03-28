@@ -164,11 +164,7 @@ const WalletPixelPlanet: React.FC<Props> = ({ portfolio, score, address }) => {
 
   const PostMintButtons = () => (
     <div className="flex gap-2">
-      <a href={leatherUrl} target="_blank" rel="noreferrer"
-        className="flex-1 bg-white text-black text-center py-2.5 text-xs font-bold uppercase tracking-widest hover:bg-white/80 transition-colors">
-        View in Wallet
-      </a>
-      <a href={gammaUrl} target="_blank" rel="noreferrer"
+<a href={gammaUrl} target="_blank" rel="noreferrer"
         className="flex-1 bg-[#FF9900] text-black text-center py-2.5 text-xs font-bold uppercase tracking-widest hover:bg-[#ffb03a] transition-colors">
         Sell on Gamma
       </a>
