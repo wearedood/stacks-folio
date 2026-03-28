@@ -51,10 +51,7 @@ const Dashboard: React.FC<Props> = ({ portfolio, address, onReset }) => {
             {portfolio.bnsName && <span className="text-xs font-bold">{portfolio.bnsName}</span>}
             <span className="text-xs font-mono text-black/40">{shortAddr(address)}</span>
           </div>
-          <div className="flex items-center gap-3">
-          {refreshing && <span className="text-[10px] font-mono text-black/30 uppercase tracking-widest animate-pulse">Refreshing...</span>}
           <button onClick={onReset} className="text-xs font-mono text-black/30 uppercase tracking-widest hover:text-black transition-colors">Disconnect</button>
-        </div>
         </div>
       </header>
 
