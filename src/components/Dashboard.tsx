@@ -8,7 +8,7 @@ import PriceChart from './PriceChart';
 import TokenBalances from './TokenBalances';
 import Leaderboard from './Leaderboard';
 
-interface Props { portfolio: PortfolioData; address: string; onReset: () => void; refreshing?: boolean; }
+interface Props { portfolio: PortfolioData; address: string; onReset: () => void; }
 type Tab = 'overview' | 'score' | 'tokens' | 'transactions' | 'nfts' | 'leaderboard';
 
 const fmt = (n: number, d = 2) => n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -16,7 +16,7 @@ const fmtDate = (ts: number) => !ts ? '—' : new Date(ts * 1000).toLocaleDateSt
 const shortAddr = (addr: string) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '—';
 const txTypeLabel = (type: string) => ({ token_transfer: 'Transfer', contract_call: 'Contract', smart_contract: 'Deploy', coinbase: 'Coinbase' }[type] ?? type);
 
-const Dashboard: React.FC<Props> = ({ portfolio, address, onReset, refreshing }) => {
+const Dashboard: React.FC<Props> = ({ portfolio, address, onReset }) => {
   const [tab, setTab] = useState<Tab>('overview');
   const score = computeScore(portfolio);
   const badges = computeBadges(portfolio);

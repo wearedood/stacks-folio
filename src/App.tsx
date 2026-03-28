@@ -10,7 +10,6 @@ const App: React.FC = () => {
   const [address, setAddress] = useState<string | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
 
   const handleConnect = async () => {
     try {
@@ -18,25 +17,12 @@ const App: React.FC = () => {
       setError(null);
       const addr = await connectWallet();
       setAddress(addr);
-
-      // Show cached data instantly if available
-      const cached = localStorage.getItem('sf_portfolio_' + addr);
-      if (cached) {
-        setPortfolio(JSON.parse(cached));
-        setState('success');
-        setRefreshing(true);
-      }
-
-      // Always fetch fresh data
       const data = await fetchPortfolio(addr);
       setPortfolio(data);
       setState('success');
-      setRefreshing(false);
-      localStorage.setItem('sf_portfolio_' + addr, JSON.stringify(data));
     } catch (e: any) {
       setError(e.message || 'Something went wrong');
       setState('error');
-      setRefreshing(false);
     }
   };
 
@@ -45,11 +31,10 @@ const App: React.FC = () => {
     setAddress(null);
     setPortfolio(null);
     setError(null);
-    setRefreshing(false);
   };
 
   if (state === 'success' && portfolio && address) {
-    return <Dashboard portfolio={portfolio} address={address} onReset={handleReset} refreshing={refreshing} />;
+    return <Dashboard portfolio={portfolio} address={address} onReset={handleReset} />;
   }
 
   return (
