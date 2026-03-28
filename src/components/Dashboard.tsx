@@ -52,6 +52,7 @@ const Dashboard: React.FC<Props> = ({ portfolio, address, onReset }) => {
             <span className="text-xs font-mono text-black/40">{shortAddr(address)}</span>
           </div>
           <button onClick={onReset} className="text-xs font-mono text-black/30 uppercase tracking-widest hover:text-black transition-colors">Disconnect</button>
+          <button onClick={() => window.location.reload()} className="text-xs font-mono text-black/30 uppercase tracking-widest hover:text-black transition-colors border border-black/10 px-3 py-1">↻ Refresh</button>
         </div>
       </header>
 
