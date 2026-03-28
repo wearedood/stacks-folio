@@ -22,7 +22,7 @@
   (ok (var-get last-token-id)))
 
 (define-read-only (get-token-uri (token-id uint))
-  (ok (some "https://stacks-folio.vercel.app/nft")))
+  (ok (some "https://stacks-folio.vercel.app/api/nft/")))
 
 (define-read-only (get-owner (token-id uint))
   (ok (nft-get-owner? stacks-folio-galaxy token-id)))
