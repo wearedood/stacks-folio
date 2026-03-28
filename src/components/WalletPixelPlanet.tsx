@@ -160,7 +160,7 @@ const WalletPixelPlanet: React.FC<Props> = ({ portfolio, score, address }) => {
   const hasRings = portfolio.stacking.stacked || score.total > 60;
   const nftCount = portfolio.nfts.length;
   const gammaUrl = `https://gamma.io/collections/${CONTRACT}`;
-  const leatherUrl = `https://leather.io/activity`;
+  const leatherUrl = `https://explorer.hiro.so/address/''+address+'?chain=mainnet'`;
 
   const PostMintButtons = () => (
     <div className="flex gap-2">
