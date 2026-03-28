@@ -139,7 +139,7 @@ const WalletPixelPlanet: React.FC<Props> = ({ portfolio, score, address }) => {
     try {
       const { request } = await import('@stacks/connect');
       await request('stx_callContract', {
-        contract: CONTRACT,
+        contract: 'SP1GVG84HRYCBYEW59M0S4XGQF8TTVXRF8XNXGBMH.stacks-folio-galaxy',
         functionName: 'mint',
         functionArgs: [],
         network: 'mainnet',
