@@ -1,0 +1,136 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createCanvas } from 'canvas';
+
+const mkRand = (seed: number) => {
+  let s = seed | 0;
+  return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+};
+
+const PLANET_TYPES = [
+  { name: 'Asteroid',  minScore: 0,  colors: ['#6b6b6b','#4a4a4a','#888888','#333333','#999999','#222222'] },
+  { name: 'Ice Moon',  minScore: 20, colors: ['#a8d8ea','#7ec8e3','#d4f1f4','#5bb3cc','#e8f8fb','#4a9ab5'] },
+  { name: 'Rocky',     minScore: 35, colors: ['#c4752a','#8b4513','#d4924a','#6b3410','#e0a060','#4a2208'] },
+  { name: 'Lava',      minScore: 55, colors: ['#ff4500','#cc2200','#ff6600','#880000','#ff8800','#440000'] },
+  { name: 'Gas Giant', minScore: 70, colors: ['#e8c46a','#c9a227','#f0d080','#8b6914','#f5e0a0','#6b4f10'] },
+  { name: 'Ocean',     minScore: 85, colors: ['#1a6b8a','#0d4d6b','#2a8baa','#0a3347','#3aaaca','#061f2e'] },
+];
+
+export default function handler(req: VercelRequest, res: VercelResponse) {
+  const { tokenId } = req.query;
+  const id = parseInt(tokenId as string, 10);
+  if (isNaN(id) || id < 1) return res.status(400).send('Invalid token ID');
+
+  const seed = (id * 7919 + 1013904223) & 0x7fffffff;
+  const rand = mkRand(seed);
+  const score = Math.floor(rand() * 101);
+  const txCount = Math.floor(rand() * 40);
+  const nftCount = Math.floor(rand() * 15);
+  const hasRings = rand() > 0.6;
+
+  const ptype = PLANET_TYPES.filter(t => score >= t.minScore).pop()!;
+  const cols = ptype.colors;
+
+  const SIZE = 512;
+  const PIXEL = 6;
+  const W = Math.floor(SIZE / PIXEL);
+  const H = Math.floor(SIZE / PIXEL);
+
+  const small = createCanvas(W, H);
+  const g = small.getContext('2d') as any;
+  const cx = Math.floor(W / 2) - 2;
+  const cy = Math.floor(H / 2) + 2;
+  const pr = 18;
+
+  g.fillStyle = '#050510';
+  g.fillRect(0, 0, W, H);
+
+  const srand = mkRand(seed + 777);
+  for (let i = 0; i < 80; i++) {
+    const sx = Math.floor(srand() * W), sy = Math.floor(srand() * H);
+    g.fillStyle = srand() > 0.92 ? '#ffffff' : srand() > 0.6 ? '#aaaaaa' : '#444444';
+    g.fillRect(sx, sy, 1, 1);
+  }
+
+  if (hasRings) {
+    for (let rx = -pr - 8; rx <= pr + 8; rx++) {
+      const ry = Math.round(rx * 0.22), dist = Math.abs(rx);
+      if (dist < pr - 2 || dist > pr + 7) continue;
+      g.globalAlpha = dist < pr + 3 ? 0.55 : 0.25;
+      g.fillStyle = cols[1];
+      g.fillRect(cx + rx, cy + ry - 1, 1, 1);
+      g.fillRect(cx + rx, cy + ry, 1, 1);
+      g.globalAlpha = 1;
+    }
+  }
+
+  for (let py = cy - pr; py <= cy + pr; py++) {
+    for (let px = cx - pr; px <= cx + pr; px++) {
+      const dx = px - cx, dy = py - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > pr) continue;
+      const lat = dy / pr;
+      let col = Math.abs(lat) < 0.15 ? cols[4] : Math.abs(lat) < 0.4 ? cols[0] : Math.abs(lat) < 0.7 ? cols[1] : cols[5];
+      const nrand = mkRand((px * 73 + py * 37 + seed) | 0);
+      if (nrand() > 0.65) col = nrand() > 0.5 ? cols[2] : cols[3];
+      if (ptype.name === 'Lava') { const lr = mkRand((px*11+py*17+seed+300)|0); if (lr() > 0.88) col = '#ffcc00'; }
+      if (ptype.name === 'Ice Moon') { const ir = mkRand((px*11+py*17+seed+500)|0); if (ir() > 0.93) col = cols[5]; }
+      const shade = 1 - (dx * 0.012 + dy * 0.014) * (dist / pr);
+      g.fillStyle = col; g.globalAlpha = Math.max(0.5, Math.min(1, shade));
+      g.fillRect(px, py, 1, 1); g.globalAlpha = 1;
+    }
+  }
+
+  const craterCount = Math.min(Math.floor(txCount / 3), 7);
+  const crand = mkRand(seed + 42);
+  for (let i = 0; i < craterCount; i++) {
+    const angle = crand() * Math.PI * 2, r = crand() * (pr - 4) + 2;
+    const cpx = Math.round(cx + Math.cos(angle) * r * 0.65);
+    const cpy = Math.round(cy + Math.sin(angle) * r * 0.6);
+    const cr = 1 + Math.floor(crand() * 2);
+    g.fillStyle = '#000000'; g.globalAlpha = 0.45; g.fillRect(cpx-cr, cpy-cr, cr*2+1, cr*2+1);
+    g.fillStyle = '#ffffff'; g.globalAlpha = 0.15; g.fillRect(cpx-cr, cpy-cr, cr, cr);
+    g.globalAlpha = 1;
+  }
+
+  for (let py = cy-pr-1; py <= cy+pr+1; py++) {
+    for (let px = cx-pr-1; px <= cx+pr+1; px++) {
+      const dx = px-cx, dy = py-cy, dist = Math.sqrt(dx*dx+dy*dy);
+      if (dist < pr || dist > pr+1.8) continue;
+      g.fillStyle = cols[0]; g.globalAlpha = 0.12; g.fillRect(px, py, 1, 1); g.globalAlpha = 1;
+    }
+  }
+
+  if (nftCount > 5) {
+    const mr = 4, mx2 = cx+pr+11, my2 = cy-pr+5;
+    for (let py = my2-mr; py <= my2+mr; py++) for (let px = mx2-mr; px <= mx2+mr; px++) {
+      const dx=px-mx2, dy=py-my2;
+      if (Math.sqrt(dx*dx+dy*dy) > mr) continue;
+      const r = mkRand((px*17+py*23+seed)|0);
+      g.fillStyle = r() > 0.5 ? '#c8c8c8' : '#aaaaaa';
+      g.globalAlpha = Math.max(0.4, 0.9-dx*0.03-dy*0.04); g.fillRect(px, py, 1, 1); g.globalAlpha = 1;
+    }
+  }
+
+  if (nftCount > 10) {
+    const mr = 3, mx2 = cx-pr-8, my2 = cy+pr-9;
+    for (let py = my2-mr; py <= my2+mr; py++) for (let px = mx2-mr; px <= mx2+mr; px++) {
+      const dx=px-mx2, dy=py-my2;
+      if (Math.sqrt(dx*dx+dy*dy) > mr) continue;
+      const r = mkRand((px*13+py*19+seed+1)|0);
+      g.fillStyle = r() > 0.5 ? '#d4a574' : '#b8845a';
+      g.globalAlpha = 0.85; g.fillRect(px, py, 1, 1); g.globalAlpha = 1;
+    }
+  }
+
+  // Scale up pixelated to SIZE
+  const canvas = createCanvas(SIZE, SIZE);
+  const ctx = canvas.getContext('2d') as any;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(small, 0, 0, W, H, 0, 0, SIZE, SIZE);
+
+  const buffer = canvas.toBuffer('image/png');
+  res.setHeader('Content-Type', 'image/png');
+  res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  return res.status(200).send(buffer);
+}
