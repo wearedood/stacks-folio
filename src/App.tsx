@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { connectWallet } from './services/web3Service';
 import { fetchPortfolio, PortfolioData } from './services/stacksService';
 import Dashboard from './components/Dashboard';
@@ -10,37 +10,33 @@ const App: React.FC = () => {
   const [address, setAddress] = useState<string | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  // On mount, check if wallet was previously connected
-  useEffect(() => {
-    const saved = localStorage.getItem('sf_address');
-    if (saved) loadPortfolio(saved);
-  }, []);
-
-  const loadPortfolio = async (addr: string) => {
-    try {
-      setState('loading');
-      setError(null);
-      setAddress(addr);
-      const data = await fetchPortfolio(addr);
-      setPortfolio(data);
-      setState('success');
-      localStorage.setItem('sf_address', addr);
-    } catch (e: any) {
-      setError(e.message || 'Something went wrong');
-      setState('error');
-    }
-  };
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleConnect = async () => {
     try {
       setState('loading');
       setError(null);
       const addr = await connectWallet();
-      await loadPortfolio(addr);
+      setAddress(addr);
+
+      // Show cached data instantly if available
+      const cached = localStorage.getItem('sf_portfolio_' + addr);
+      if (cached) {
+        setPortfolio(JSON.parse(cached));
+        setState('success');
+        setRefreshing(true);
+      }
+
+      // Always fetch fresh data
+      const data = await fetchPortfolio(addr);
+      setPortfolio(data);
+      setState('success');
+      setRefreshing(false);
+      localStorage.setItem('sf_portfolio_' + addr, JSON.stringify(data));
     } catch (e: any) {
       setError(e.message || 'Something went wrong');
       setState('error');
+      setRefreshing(false);
     }
   };
 
@@ -49,11 +45,11 @@ const App: React.FC = () => {
     setAddress(null);
     setPortfolio(null);
     setError(null);
-    localStorage.removeItem('sf_address');
+    setRefreshing(false);
   };
 
   if (state === 'success' && portfolio && address) {
-    return <Dashboard portfolio={portfolio} address={address} onReset={handleReset} />;
+    return <Dashboard portfolio={portfolio} address={address} onReset={handleReset} refreshing={refreshing} />;
   }
 
   return (
