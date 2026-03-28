@@ -32,7 +32,7 @@ const Dashboard: React.FC<Props> = ({ portfolio, address, onReset }) => {
     { id: 'overview', label: 'Overview' },
     { id: 'score', label: `Score · ${score.total}` },
     { id: 'tokens', label: 'Tokens' },
-    { id: 'transactions', label: 'Txns' },
+    { id: 'transactions', label: `Txns · ${portfolio.transactions.length}` },
     { id: 'nfts', label: `NFTs${portfolio.nfts.length ? ` · ${portfolio.nfts.length}` : ''}` },
     { id: 'leaderboard', label: 'Leaderboard' },
   ];
